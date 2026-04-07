@@ -4,6 +4,7 @@ import sys
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, simpledialog
 from contextlib import redirect_stdout
+import requests
 
 
 def ensure_client_import():
@@ -76,6 +77,17 @@ class IMGui(tk.Tk):
         try:
             with redirect_stdout(buf):
                 func(*args, **kwargs)
+        except requests.HTTPError as exc:
+            detail = ""
+            try:
+                data = exc.response.json()
+                detail = data.get("detail", "")
+            except Exception:  # noqa: BLE001
+                detail = exc.response.text if exc.response is not None else ""
+            self.log(f"[{label}] HTTP ERROR: {exc}")
+            if detail:
+                self.log(f"[{label}] DETAIL: {detail}")
+            return
         except Exception as exc:  # noqa: BLE001
             self.log(f"[{label}] ERROR: {exc}")
             return
@@ -86,7 +98,10 @@ class IMGui(tk.Tk):
             self.log(f"[{label}] Done (no output).")
 
     def ask(self, prompt: str, initial: str = "") -> str | None:
-        return simpledialog.askstring("Input", prompt, initialvalue=initial, parent=self)
+        value = simpledialog.askstring("Input", prompt, initialvalue=initial, parent=self)
+        if value is None:
+            return None
+        return value.strip()
 
     # Actions
     def do_register(self):

@@ -1,23 +1,14 @@
 {
-  "username": "alice",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbGljZSIsImV4cCI6MTc3NTQ5NjI0MiwianRpIjoiNTQwOTYwY2YyMWI4NDhjNDk4MWU5YTlhMzhhZTNjZjgifQ.J26nk79eBeDe_r_N12nHJKmiSOsTsAr3nyEbUE7rTbc",
-  "otp_secret": "HVJ3L2VIBMGHJZMNU74E7DFVTVGVXIPL",
-  "identity_privkey": "wDpv2wKZhFtwQMZHxT1l9heu+1iNCOa7ELd8QdTpx3Q=",
-  "peer_keys": {
-    "bob": "OFO5f+cf0CJ3RcY5WUSYqqp82hGNbCtQdLBkoMgtuF0="
-  },
-  "counters": {
-    "alice->bob": 2
-  },
-  "peer_verified": {
-    "bob": true
-  },
-  "trusted_fingerprints": {
-    "bob": "65:e0:4e:0d:a0:c4:a1:2b:b9:f2:0e:7a:77:51:71:da:c2:63:8c:7b:3d:9f:e6:15:cf:9b:f5:10:09:fd:20:e1"
-  },
-  "key_change_blocked": {
-    "bob": false
-  },
+  "username": "Alice123",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBbGljZTEyMyIsImV4cCI6MTc3NTUzNTIxNywianRpIjoiMzAyYWQ0NWZlYTIxNGY0ZmJmYjgxMDNjYjk5ZWE1ZDcifQ.E_KEVZ0KL6paAYFbRR29uIIWiF6LQ9xhbFreLtRvypI",
+  "otp_secret": "X6HQNZ7Q73UFU3ZIOA45JP2PSGFVW2RW",
+  "identity_privkey": "",
+  "peer_keys": {},
+  "counters": {},
+  "peer_verified": {},
+  "trusted_fingerprints": {},
+  "key_change_blocked": {},
   "identity_privkey_enc": "",
-  "state_crypto": {}
+  "state_crypto": {},
+  "key_storage": "keyring"
 }
