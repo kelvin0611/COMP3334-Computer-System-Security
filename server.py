@@ -17,6 +17,7 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 
+# Allow custom DB path for testing/demo isolation.
 DATABASE_URL = os.environ.get("IM_DATABASE_URL", "sqlite:///./im.db")
 JWT_SECRET = "CHANGE_THIS_FOR_PROD"
 JWT_ALGO = "HS256"
@@ -206,6 +207,7 @@ def token_payload_allow_expired(token: str) -> dict:
 
 
 def current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+    # Central auth guard: verify JWT + revocation + existing user.
     payload = token_payload(token)
     username = payload.get("sub")
     jti = payload.get("jti")
@@ -254,6 +256,7 @@ def client_ip(request: Request) -> str:
 
 
 def enforce_rate_limit(db: Session, key: str, limit: int, window_seconds: int = 60):
+    # Simple fixed-window rate limit persisted in DB.
     now = int(utc_now().timestamp())
     window_start = now - (now % window_seconds)
     bucket = db.query(RateLimitBucket).filter(
@@ -476,6 +479,7 @@ def send_message(payload: MessageSendRequest, user: User = Depends(current_user)
     if int(ad_obj.get("ttl_seconds", -1)) != payload.ttl_seconds:
         raise HTTPException(status_code=400, detail="AD ttl mismatch")
 
+    # Remove stale ciphertext before enqueueing new messages.
     cleanup_expired_messages(db)
     receiver = db.query(User).filter(User.username == payload.receiver).first()
     if not receiver:
@@ -544,6 +548,7 @@ def send_e2ee_ack(payload: AckE2EERequest, user: User = Depends(current_user), d
     if in_block_list(receiver, user.username):
         raise HTTPException(status_code=403, detail="Blocked by receiver")
 
+    # ACK itself is also ciphertext and expires like normal messages.
     expires = utc_now() + timedelta(seconds=payload.ttl_seconds)
     ack_msg = Message(
         convo_id=payload.convo_id,
@@ -559,7 +564,8 @@ def send_e2ee_ack(payload: AckE2EERequest, user: User = Depends(current_user), d
         kind="ack",
     )
     db.add(ack_msg)
-    # Mark original chat message as acknowledged, if present
+    # Align unread counters with delivered semantics by updating source chat.
+    # If the sender forged orig_message_id, filters below prevent cross-chat updates.
     try:
         orig_id = int(ad_obj.get("orig_message_id", -1))
     except (TypeError, ValueError):

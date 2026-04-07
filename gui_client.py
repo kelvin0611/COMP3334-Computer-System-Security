@@ -11,6 +11,7 @@ def ensure_client_import():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     if script_dir not in sys.path:
         sys.path.insert(0, script_dir)
+    # Import from project root even when launched from subfolders.
     import client as im_client  # type: ignore[import]
 
     return im_client
@@ -83,11 +84,13 @@ class IMGui(tk.Tk):
         self.output.configure(state="disabled")
 
     def run_action(self, label, func, *args, **kwargs):
+        # Capture stdout so CLI-style client functions are visible in GUI log.
         buf = io.StringIO()
         try:
             with redirect_stdout(buf):
                 func(*args, **kwargs)
         except requests.HTTPError as exc:
+            # Surface backend detail (e.g., Invalid OTP) for faster debugging.
             detail = ""
             try:
                 data = exc.response.json()

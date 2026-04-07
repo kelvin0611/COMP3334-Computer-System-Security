@@ -131,6 +131,7 @@ def state_fernet_key(passphrase: str, salt_b64: str, iterations: int) -> bytes:
 
 
 def get_identity_privkey(state: dict) -> str:
+    # Storage priority: OS keychain > plaintext state > encrypted local state.
     if state.get("key_storage") == "keyring":
         return get_key_from_keyring(state)
     if state.get("identity_privkey"):
@@ -166,6 +167,7 @@ def encrypt_identity_key_in_state(state: dict, force: bool = False) -> bool:
 
 
 def migrate_identity_key_to_best_storage(state: dict) -> str:
+    # Try strongest local protection first; keep plaintext only as last fallback.
     plain = state.get("identity_privkey", "")
     if not plain:
         return state.get("key_storage", "plain")
@@ -360,6 +362,7 @@ def sync_peer_key(peer: str, quiet: bool = False):
     new_fp = fingerprint(pub)
     state["peer_keys"][peer] = pub
 
+    # Strict key-change policy: any identity key rotation forces re-verification.
     if old and old != pub:
         state["peer_verified"][peer] = False
         state["key_change_blocked"][peer] = True
@@ -506,6 +509,7 @@ def send_e2ee_ack(state: dict, peer: str, message_id: int):
     key = derive_key(my_priv, state["peer_keys"][peer])
     aes = AESGCM(key)
     nonce = os.urandom(12)
+    # ACK counter is separated from chat counter to avoid collisions.
     counter_key = f"{state['username']}->ack->{peer}"
     counter = state["counters"].get(counter_key, 0) + 1
     state["counters"][counter_key] = counter
@@ -562,6 +566,7 @@ def pull(limit: int, offset: int):
             )
             continue
         counter = msg["msg_counter"]
+        # Receiver asks server replay-check endpoint before decryption.
         replay = requests.post(
             f"{SERVER}/replay/check/{sender}",
             params={"counter": counter},
