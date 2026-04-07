@@ -1,0 +1,23 @@
+{
+  "username": "bob",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJib2IiLCJleHAiOjE3NzU0OTYyNDcsImp0aSI6IjkwNTk5NTc3ZTUwYjRiZGRiYzkxM2YyOTU4OGVlMjBmIn0.zT62UVfpPid5SWywQ5bxx_eZC5Kqst9TU4hjPnsv1lw",
+  "otp_secret": "JKZIODJ2JZ56CGT5OAWJNEW6XCXKYP66",
+  "identity_privkey": "eGxWFThFb00MUpvlwRtMg7c2XiKQiTsZvJ7YzExYNUA=",
+  "peer_keys": {
+    "alice": "sZecE5FZf/fgMy2+3R5/2mEpYXWnFmuYQyvduP/ucBQ="
+  },
+  "counters": {
+    "bob->ack->alice": 1
+  },
+  "peer_verified": {
+    "alice": true
+  },
+  "trusted_fingerprints": {
+    "alice": "49:0a:70:7b:af:18:68:8a:69:12:fd:2e:24:9b:54:c8:93:a6:f0:a2:6f:8c:5d:e4:ab:1e:94:46:0d:56:17:f6"
+  },
+  "key_change_blocked": {
+    "alice": false
+  },
+  "identity_privkey_enc": "",
+  "state_crypto": {}
+}

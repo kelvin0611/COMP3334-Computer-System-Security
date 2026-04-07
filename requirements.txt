@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+passlib[bcrypt]
+pyotp
+python-jose[cryptography]
+cryptography
+requests
+keyring
