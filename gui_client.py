@@ -47,8 +47,11 @@ class IMGui(tk.Tk):
         add_btn("Friend Requests", self.do_friend_requests)
         add_btn("Respond Request", self.do_respond_request)
         add_btn("Cancel Req", self.do_cancel_request)
+        add_btn("Block User", self.do_block_user)
+        add_btn("Remove Friend", self.do_remove_friend)
         add_btn("Sync Key", self.do_sync_key)
         add_btn("Verify Peer", self.do_verify_peer)
+        add_btn("Trust Status", self.do_trust_status)
         add_btn("Send Msg", self.do_send_msg)
         add_btn("Pull Msgs", self.do_pull)
         add_btn("Conversations", self.do_conversations)
@@ -141,6 +144,18 @@ class IMGui(tk.Tk):
             return
         self.run_action("Add Friend", self.im_client.add_friend, user)
 
+    def do_block_user(self):
+        user = self.ask("Username to block")
+        if not user:
+            return
+        self.run_action("Block User", self.im_client.block_user, user)
+
+    def do_remove_friend(self):
+        user = self.ask("Friend username to remove")
+        if not user:
+            return
+        self.run_action("Remove Friend", self.im_client.remove_friend, user)
+
     def do_friend_requests(self):
         limit = self.ask("Limit (default 20)", "20") or "20"
         offset = self.ask("Offset (default 0)", "0") or "0"
@@ -181,6 +196,12 @@ class IMGui(tk.Tk):
         if not peer:
             return
         self.run_action("Verify Peer", self.im_client.verify_peer, peer)
+
+    def do_trust_status(self):
+        peer = self.ask("Peer username")
+        if not peer:
+            return
+        self.run_action("Trust Status", self.im_client.trust_status, peer)
 
     def do_send_msg(self):
         to_user = self.ask("Send to (peer username)")

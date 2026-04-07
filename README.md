@@ -90,6 +90,36 @@ For TLS-first server:
 IM_SERVER="https://127.0.0.1:8443" python ../ui_client.py
 ```
 
+## 3c) GUI test steps for R5 and R15 (report-ready)
+
+Use two GUI windows from different folders (`alice/` and `bob/`) with the same server URL.
+
+### R5 Fingerprint / verification UI
+
+1. In Alice GUI, click `Sync Key` and enter `Bob123`.
+2. Observe output line with `Peer fingerprint: ...`.
+3. Click `Verify Peer` and enter `Bob123`.
+4. Click `Trust Status` and enter `Bob123`.
+5. Confirm JSON output includes:
+   - `fingerprint`
+   - `verified: true`
+   - `blocked_due_to_key_change: false` (unless key was changed)
+
+Suggested evidence for report:
+- Screenshot A: `Peer fingerprint` output after `Sync Key`.
+- Screenshot B: `Trust Status` output showing `verified: true`.
+
+### R15 Blocking / removing
+
+1. In Bob GUI, click `Block User`, enter `Alice123`.
+2. In Alice GUI, click `Send Msg` to `Bob123`.
+3. Confirm output shows HTTP 403 with detail `Blocked by receiver`.
+4. (Optional) In Bob GUI, click `Remove Friend` and enter `Alice123`, then verify Alice can no longer send as a friend.
+
+Suggested evidence for report:
+- Screenshot C: Bob `Block User` success output.
+- Screenshot D: Alice send failure output (`403`, `Blocked by receiver`).
+
 ## 4) Security notes
 
 - E2EE key agreement: X25519 + HKDF-SHA256

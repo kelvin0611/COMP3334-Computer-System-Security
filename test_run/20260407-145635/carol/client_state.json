@@ -1,0 +1,24 @@
+{
+  "username": "Carol123",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJDYXJvbDEyMyIsImV4cCI6MTc3NTU0Njc5NiwianRpIjoiMTU3MGI0ODI0YWJjNDc5ZGFkMTZiYmFmMDM5Y2E5NmEifQ.YEDlcgvKtrsLi-AZC6HnGVNRkJdlshy_n1lPn9UygUE",
+  "otp_secret": "UCG3ZHOXTUHX5ROZ42RG7X3MBFDMXAHJ",
+  "identity_privkey": "ABv2Av2SJHLbeVPl4jTxbY4iG94a+d/Rk01IWb6VME8=",
+  "peer_keys": {
+    "Bob123": "ACZyy/phRw/cetSSj4PLkTAfS7eO7UziDceagj16Lh0="
+  },
+  "counters": {
+    "Carol123->Bob123": 1
+  },
+  "peer_verified": {
+    "Bob123": true
+  },
+  "trusted_fingerprints": {
+    "Bob123": "0d:d3:f5:ef:f8:7a:92:c4:3a:f9:56:53:33:d7:a0:89:35:e5:8f:3a:eb:7b:7a:33:47:5b:96:ae:0c:87:c7:ef"
+  },
+  "key_change_blocked": {
+    "Bob123": false
+  },
+  "identity_privkey_enc": "",
+  "state_crypto": {},
+  "key_storage": "plain"
+}

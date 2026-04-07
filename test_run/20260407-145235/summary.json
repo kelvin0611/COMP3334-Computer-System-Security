@@ -1,0 +1,96 @@
+{
+  "R1": {
+    "pass": true
+  },
+  "R2": {
+    "pass": true
+  },
+  "R3": {
+    "pass": null
+  },
+  "R4": {
+    "pass": null
+  },
+  "R5": {
+    "pass": true,
+    "alice_sync_stdout": "Peer fingerprint: e8:33:3e:60:12:ca:88:ad:32:2f:f5:23:df:7a:1d:be:09:98:b9:02:86:9f:54:e1:d3:8c:fb:47:47:81:e3:f8\nPeer is UNVERIFIED. Run: verify-peer --user Bob123"
+  },
+  "R6": {
+    "pass": null
+  },
+  "R7": {
+    "pass": null
+  },
+  "R8": {
+    "pass": null
+  },
+  "R9": {
+    "pass": true,
+    "pull1": "Replay dropped from Alice123, counter=1\nReplay dropped from Alice123, counter=2\n[Alice123] replay-check | ttl=60 | expires=2026-04-07T06:53:41.480257",
+    "pull2": "Replay dropped from Alice123, counter=1\nReplay dropped from Alice123, counter=2\nReplay dropped from Alice123, counter=3"
+  },
+  "R10": {
+    "pass": true
+  },
+  "R11": {
+    "pass": true
+  },
+  "R12": {
+    "pass": null
+  },
+  "R13": {
+    "pass": true,
+    "output": "{'request_id': 2, 'status': 'accepted'}"
+  },
+  "R14": {
+    "pass": true,
+    "cancel_response": {
+      "request_id": 1,
+      "status": "cancelled"
+    },
+    "bob_friend_requests_stdout": "{\n  \"incoming\": [],\n  \"outgoing\": [],\n  \"page\": {\n    \"limit\": 20,\n    \"offset\": 0\n  }\n}"
+  },
+  "R15": {
+    "pass": null
+  },
+  "R16": {
+    "pass": true
+  },
+  "R17": {
+    "pass": true,
+    "stdout": "[Alice123] hello Bob | ttl=60 | expires=2026-04-07T06:53:40.511927"
+  },
+  "R18": {
+    "pass": true,
+    "stdout": "[delivery] message 1 acknowledged by Bob123"
+  },
+  "R19": {
+    "pass": null
+  },
+  "R20": {
+    "pass": true
+  },
+  "R21": {
+    "pass": true
+  },
+  "R22": {
+    "pass": null
+  },
+  "R23": {
+    "pass": null
+  },
+  "R24": {
+    "pass": true,
+    "before": "{\n  \"conversations\": [\n    {\n      \"peer\": \"Alice123\",\n      \"last_time\": \"2026-04-07T06:52:40.943611\",\n      \"unread\": 1\n    }\n  ],\n  \"page\": {\n    \"limit\": 20,\n    \"offset\": 0,\n    \"total\": 1\n  }\n}",
+    "after": "{\n  \"conversations\": [\n    {\n      \"peer\": \"Alice123\",\n      \"last_time\": \"2026-04-07T06:52:41.218973\",\n      \"unread\": 0\n    }\n  ],\n  \"page\": {\n    \"limit\": 20,\n    \"offset\": 0,\n    \"total\": 1\n  }\n}"
+  },
+  "R25": {
+    "pass": true,
+    "paging_messages_pass": {
+      "pass": true,
+      "pull0": "Replay dropped from Alice123, counter=1\nReplay dropped from Alice123, counter=2\nReplay dropped from Alice123, counter=3\nReplay dropped from Alice123, counter=5\n[Alice123] page-0 | ttl=60 | expires=2026-04-07T06:53:51.732259",
+      "pull5": "[Alice123] page-1 | ttl=60 | expires=2026-04-07T06:53:51.864970\n[Alice123] page-2 | ttl=60 | expires=2026-04-07T06:53:51.998712\n[Alice123] page-3 | ttl=60 | expires=2026-04-07T06:53:52.131676\n[Alice123] page-4 | ttl=60 | expires=2026-04-07T06:53:52.264657\n[Alice123] page-5 | ttl=60 | expires=2026-04-07T06:53:52.396512"
+    },
+    "paging_conversations_pass": true
+  }
+}

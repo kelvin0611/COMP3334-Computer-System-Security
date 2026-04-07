@@ -1,0 +1,26 @@
+{
+  "username": "Bob123",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCb2IxMjMiLCJleHAiOjE3NzU1NDY3OTYsImp0aSI6IjYzZjViNzM4OTgyMDRhMTNhNzQwYzRhMjEwOTc5NDcyIn0.rRCxS53EU8LLgu2VyXtHS0zAzSF3szaFP-oeYCQK_14",
+  "otp_secret": "HUJIVNU5Q2DYQMM6GDBGCJJDWN5REVGO",
+  "identity_privkey": "kH0Sr7Cgv8CGoON7bOVoaw3Sqv5XDpqa6+zXTRVcpn0=",
+  "peer_keys": {
+    "Alice123": "ga9OgyACxvfKuFlyjZ0QP0YAis3mMau3gVTKCo5+UlM=",
+    "Carol123": "raBoasXIg/H58mu/VYHPkooCOw7jjKLkDTvCC7y2gHc="
+  },
+  "counters": {},
+  "peer_verified": {
+    "Alice123": true,
+    "Carol123": true
+  },
+  "trusted_fingerprints": {
+    "Alice123": "2f:16:f1:4a:16:0d:9c:08:e3:a7:d2:3a:a0:d2:86:7d:d3:40:87:3e:81:dc:f7:b4:01:ef:db:17:c8:68:76:52",
+    "Carol123": "40:4e:28:51:a4:ba:3f:c3:92:c1:17:82:b4:90:bf:16:5e:49:ab:dc:6c:ba:70:32:2c:f0:a8:3b:aa:74:d2:94"
+  },
+  "key_change_blocked": {
+    "Alice123": false,
+    "Carol123": false
+  },
+  "identity_privkey_enc": "",
+  "state_crypto": {},
+  "key_storage": "plain"
+}

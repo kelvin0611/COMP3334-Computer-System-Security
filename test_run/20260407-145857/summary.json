@@ -1,0 +1,98 @@
+{
+  "R1": {
+    "pass": true
+  },
+  "R2": {
+    "pass": true
+  },
+  "R3": {
+    "pass": true
+  },
+  "R4": {
+    "pass": true
+  },
+  "R5": {
+    "pass": true,
+    "alice_sync_stdout": "Peer fingerprint: a1:f5:08:05:dd:52:dc:34:3e:3a:c2:b2:79:5b:78:31:d4:e4:df:82:05:18:86:c9:ca:b8:e7:0e:78:6f:69:88\nPeer is UNVERIFIED. Run: verify-peer --user Bob123"
+  },
+  "R6": {
+    "pass": true,
+    "sync_again_stdout": "WARNING: Identity key changed for Bob123\nOld FP: a1:f5:08:05:dd:52:dc:34:3e:3a:c2:b2:79:5b:78:31:d4:e4:df:82:05:18:86:c9:ca:b8:e7:0e:78:6f:69:88\nNew FP: a1:19:25:aa:6d:70:48:bb:ec:61:a4:46:31:03:39:ea:32:ad:2e:c1:27:0d:4a:5b:ce:6c:9e:18:83:30:2d:5e\nStrict policy: sending is blocked until you run: verify-peer --user Bob123"
+  },
+  "R7": {
+    "pass": false
+  },
+  "R8": {
+    "pass": true,
+    "stdout": "Failed to decrypt message 1 from Alice123"
+  },
+  "R9": {
+    "pass": false,
+    "pull1": "Replay dropped from Alice123, counter=3\nReplay dropped from Alice123, counter=4\nFailed to decrypt message 3 from Alice123",
+    "pull2": "Replay dropped from Alice123, counter=3\nReplay dropped from Alice123, counter=4\nReplay dropped from Alice123, counter=5"
+  },
+  "R10": {
+    "pass": false
+  },
+  "R11": {
+    "pass": false
+  },
+  "R12": {
+    "pass": true
+  },
+  "R13": {
+    "pass": true,
+    "output": "{'request_id': 2, 'status': 'accepted'}"
+  },
+  "R14": {
+    "pass": true,
+    "cancel_response": {
+      "request_id": 1,
+      "status": "cancelled"
+    },
+    "bob_friend_requests_stdout": "{\n  \"incoming\": [],\n  \"outgoing\": [],\n  \"page\": {\n    \"limit\": 20,\n    \"offset\": 0\n  }\n}"
+  },
+  "R15": {
+    "pass": true
+  },
+  "R16": {
+    "pass": true
+  },
+  "R17": {
+    "pass": false,
+    "stdout": "Failed to decrypt message 1 from Alice123"
+  },
+  "R18": {
+    "pass": false,
+    "stdout": ""
+  },
+  "R19": {
+    "pass": true
+  },
+  "R20": {
+    "pass": false
+  },
+  "R21": {
+    "pass": true
+  },
+  "R22": {
+    "pass": false
+  },
+  "R23": {
+    "pass": true
+  },
+  "R24": {
+    "pass": false,
+    "before": "{\n  \"conversations\": [\n    {\n      \"peer\": \"Alice123\",\n      \"last_time\": \"2026-04-07T06:59:02.934947\",\n      \"unread\": 2\n    }\n  ],\n  \"page\": {\n    \"limit\": 20,\n    \"offset\": 0,\n    \"total\": 1\n  }\n}",
+    "after": "{\n  \"conversations\": [\n    {\n      \"peer\": \"Alice123\",\n      \"last_time\": \"2026-04-07T06:59:02.934947\",\n      \"unread\": 2\n    }\n  ],\n  \"page\": {\n    \"limit\": 20,\n    \"offset\": 0,\n    \"total\": 1\n  }\n}"
+  },
+  "R25": {
+    "pass": true,
+    "paging_messages_pass": {
+      "pass": true,
+      "pull0": "Replay dropped from Alice123, counter=3\nReplay dropped from Alice123, counter=4\nReplay dropped from Alice123, counter=5\nReplay dropped from Alice123, counter=7\nFailed to decrypt message 5 from Alice123",
+      "pull5": "Failed to decrypt message 6 from Alice123\nFailed to decrypt message 7 from Alice123\nFailed to decrypt message 8 from Alice123\nFailed to decrypt message 9 from Alice123\nFailed to decrypt message 10 from Alice123"
+    },
+    "paging_conversations_pass": true
+  }
+}

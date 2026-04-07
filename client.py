@@ -302,6 +302,20 @@ def add_friend(target: str):
     print(resp.json())
 
 
+def block_user(target: str):
+    state = load_state()
+    resp = requests.post(f"{SERVER}/friends/block/{target}", headers=auth_headers(state), timeout=10)
+    resp.raise_for_status()
+    print(resp.json())
+
+
+def remove_friend(target: str):
+    state = load_state()
+    resp = requests.delete(f"{SERVER}/friends/{target}", headers=auth_headers(state), timeout=10)
+    resp.raise_for_status()
+    print(resp.json())
+
+
 def friend_requests(limit: int, offset: int):
     state = load_state()
     resp = requests.get(
@@ -479,9 +493,11 @@ def send_message(peer: str, plaintext: str, ttl: int):
         "msg_counter": counter,
         "ttl_seconds": ttl,
     }
+    # Persist the message counter before the network request so retries/failures
+    # do not accidentally reuse an already-seen counter value at the receiver.
+    save_state(state)
     resp = requests.post(f"{SERVER}/messages/send", json=payload, headers=auth_headers(state), timeout=10)
     resp.raise_for_status()
-    save_state(state)
     print(resp.json())
 
 
@@ -517,6 +533,7 @@ def send_e2ee_ack(state: dict, peer: str, message_id: int):
         "msg_counter": counter,
         "ttl_seconds": ttl,
     }
+    save_state(state)
     resp = requests.post(f"{SERVER}/messages/ack-e2ee", json=payload, headers=auth_headers(state), timeout=10)
     resp.raise_for_status()
 
@@ -633,6 +650,10 @@ def main():
 
     p = sub.add_parser("add-friend")
     p.add_argument("--user", required=True)
+    p = sub.add_parser("block-user")
+    p.add_argument("--user", required=True)
+    p = sub.add_parser("remove-friend")
+    p.add_argument("--user", required=True)
 
     p = sub.add_parser("friend-requests")
     p.add_argument("--limit", type=int, default=20)
@@ -676,6 +697,10 @@ def main():
         logout()
     elif args.cmd == "add-friend":
         add_friend(args.user)
+    elif args.cmd == "block-user":
+        block_user(args.user)
+    elif args.cmd == "remove-friend":
+        remove_friend(args.user)
     elif args.cmd == "friend-requests":
         friend_requests(args.limit, args.offset)
     elif args.cmd == "accept":

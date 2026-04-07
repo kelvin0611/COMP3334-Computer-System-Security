@@ -3,6 +3,7 @@ import binascii
 import json
 import re
 from datetime import datetime, timedelta, timezone
+import os
 from typing import Literal
 from uuid import uuid4
 
@@ -16,7 +17,7 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 
-DATABASE_URL = "sqlite:///./im.db"
+DATABASE_URL = os.environ.get("IM_DATABASE_URL", "sqlite:///./im.db")
 JWT_SECRET = "CHANGE_THIS_FOR_PROD"
 JWT_ALGO = "HS256"
 ACCESS_TOKEN_MINUTES = 30
