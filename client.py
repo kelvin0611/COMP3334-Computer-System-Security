@@ -3,6 +3,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 from datetime import datetime, timezone
 
 import requests
@@ -17,7 +18,31 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.fernet import Fernet
 
-SERVER = os.environ.get("IM_SERVER", "http://127.0.0.1:8000")
+def normalize_server_url(raw: str | None) -> str:
+    """Accept plain http(s) URL or accidental Markdown / rich-text paste like [http://host](http://host/)."""
+    default = "http://127.0.0.1:8000"
+    if not raw:
+        return default
+    s = raw.strip()
+    md = re.fullmatch(r"\[([^\]]*)\]\(([^)]+)\)", s)
+    if md:
+        s = md.group(2).strip()
+    elif "](" in s:
+        m = re.search(r"\]\((https?://[^)\s]+)\)", s)
+        if m:
+            s = m.group(1).strip()
+    if s.startswith("<") and s.endswith(">"):
+        s = s[1:-1].strip()
+    m = re.match(r"^(https?://[^\s\])]+)", s)
+    if m:
+        s = m.group(1)
+    s = s.rstrip("/")
+    if not re.match(r"^https?://", s, re.I):
+        return default
+    return s
+
+
+SERVER = normalize_server_url(os.environ.get("IM_SERVER"))
 STATE_FILE = "client_state.json"
 LOCAL_INBOX_FILE = "local_inbox.json"
 KEYRING_SERVICE = "COMP3334_SECURE_IM"
@@ -258,11 +283,16 @@ def login(username: str, password: str, otp: str):
 
 def logout():
     state = load_state()
-    resp = requests.post(f"{SERVER}/auth/logout", headers=auth_headers(state), timeout=10)
-    resp.raise_for_status()
-    state["token"] = ""
-    save_state(state)
-    print(resp.json())
+    try:
+        resp = requests.post(f"{SERVER}/auth/logout", headers=auth_headers(state), timeout=10)
+        if resp.ok:
+            print(resp.json())
+        else:
+            print(f"Server logout: {resp.status_code} {resp.text}")
+    finally:
+        state["token"] = ""
+        save_state(state)
+        print("Local session cleared.")
 
 
 def add_friend(target: str):
@@ -295,6 +325,17 @@ def respond_request(request_id: int, action: str):
     resp.raise_for_status()
     print(resp.json())
 
+
+def cancel_friend_request(request_id: int):
+    state = load_state()
+    resp = requests.post(
+        f"{SERVER}/friends/cancel",
+        json={"request_id": request_id},
+        headers=auth_headers(state),
+        timeout=10,
+    )
+    resp.raise_for_status()
+    print(resp.json())
 
 def sync_peer_key(peer: str, quiet: bool = False):
     state = load_state()
@@ -462,6 +503,7 @@ def send_e2ee_ack(state: dict, peer: str, message_id: int):
         "msg_counter": counter,
         "ttl_seconds": ttl,
         "sent_at": now_ts(),
+        "orig_message_id": message_id,
     }
     ad = json.dumps(ad_obj, separators=(",", ":")).encode("utf-8")
     body = json.dumps({"type": "ack", "message_id": message_id}, separators=(",", ":")).encode("utf-8")
@@ -599,6 +641,8 @@ def main():
     p.add_argument("--id", type=int, required=True)
     p = sub.add_parser("decline")
     p.add_argument("--id", type=int, required=True)
+    p = sub.add_parser("cancel-request")
+    p.add_argument("--id", type=int, required=True)
 
     p = sub.add_parser("sync-key")
     p.add_argument("--user", required=True)
@@ -638,6 +682,8 @@ def main():
         respond_request(args.id, "accept")
     elif args.cmd == "decline":
         respond_request(args.id, "decline")
+    elif args.cmd == "cancel-request":
+        cancel_friend_request(args.id)
     elif args.cmd == "sync-key":
         sync_peer_key(args.user)
     elif args.cmd == "verify-peer":

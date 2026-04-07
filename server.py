@@ -142,6 +142,10 @@ class FriendRequestAction(BaseModel):
     action: Literal["accept", "decline"]
 
 
+class FriendCancelRequest(BaseModel):
+    request_id: int = Field(ge=1)
+
+
 class MessageSendRequest(BaseModel):
     receiver: str = Field(min_length=3, max_length=32)
     convo_id: str = Field(min_length=3, max_length=256)
@@ -183,6 +187,19 @@ def create_token(username: str) -> str:
 def token_payload(token: str) -> dict:
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGO])
+    except JWTError as exc:
+        raise HTTPException(status_code=401, detail="Invalid token") from exc
+
+
+def token_payload_allow_expired(token: str) -> dict:
+    """Decode JWT for logout/revocation: signature must be valid; exp may have passed."""
+    try:
+        return jwt.decode(
+            token,
+            JWT_SECRET,
+            algorithms=[JWT_ALGO],
+            options={"verify_exp": False},
+        )
     except JWTError as exc:
         raise HTTPException(status_code=401, detail="Invalid token") from exc
 
@@ -304,15 +321,18 @@ def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)
 @app.post("/auth/logout")
 def logout(
     token: str = Depends(oauth2_scheme),
-    user: User = Depends(current_user),
     db: Session = Depends(get_db),
 ):
-    _ = user
-    payload = token_payload(token)
+    # Do not use current_user here: tokens past exp would fail and user could never "log out" cleanly.
+    payload = token_payload_allow_expired(token)
+    username = payload.get("sub")
     jti = payload.get("jti")
     exp = payload.get("exp")
-    if not jti or not exp:
+    if not username or not jti or not exp:
         raise HTTPException(status_code=400, detail="Invalid token payload")
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
     expires_at = datetime.fromtimestamp(exp, tz=timezone.utc)
     cleanup_revoked_tokens(db)
     existing = db.query(RevokedToken).filter(RevokedToken.jti == jti).first()
@@ -389,6 +409,20 @@ def respond_friend_request(payload: FriendRequestAction, user: User = Depends(cu
     if payload.action == "accept":
         a, b = sorted([req.sender, req.receiver])
         db.add(Friendship(user_a=a, user_b=b))
+    db.commit()
+    return {"request_id": req.id, "status": req.status}
+
+
+@app.post("/friends/cancel")
+def cancel_friend_request(payload: FriendCancelRequest, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    req = (
+        db.query(FriendRequest)
+        .filter(FriendRequest.id == payload.request_id)
+        .first()
+    )
+    if not req or req.sender != user.username or req.status != "pending":
+        raise HTTPException(status_code=404, detail="Pending request not found or not owned by you")
+    req.status = "cancelled"
     db.commit()
     return {"request_id": req.id, "status": req.status}
 
@@ -487,7 +521,7 @@ def send_e2ee_ack(payload: AckE2EERequest, user: User = Depends(current_user), d
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise HTTPException(status_code=400, detail="Invalid AD payload") from exc
 
-    required = {"type", "sender", "receiver", "convo_id", "msg_counter", "ttl_seconds", "sent_at"}
+    required = {"type", "sender", "receiver", "convo_id", "msg_counter", "ttl_seconds", "sent_at", "orig_message_id"}
     if not required.issubset(set(ad_obj.keys())):
         raise HTTPException(status_code=400, detail="Missing required AD fields")
     if ad_obj.get("type") != "ack":
@@ -524,6 +558,24 @@ def send_e2ee_ack(payload: AckE2EERequest, user: User = Depends(current_user), d
         kind="ack",
     )
     db.add(ack_msg)
+    # Mark original chat message as acknowledged, if present
+    try:
+        orig_id = int(ad_obj.get("orig_message_id", -1))
+    except (TypeError, ValueError):
+        orig_id = -1
+    if orig_id > 0:
+        orig = (
+            db.query(Message)
+            .filter(
+                Message.id == orig_id,
+                Message.sender == payload.receiver,  # original sender
+                Message.receiver == user.username,   # original receiver (now ACK sender)
+                Message.kind == "chat",
+            )
+            .first()
+        )
+        if orig:
+            orig.acknowledged = True
     db.commit()
     db.refresh(ack_msg)
     return {"message_id": ack_msg.id, "status": "sent"}

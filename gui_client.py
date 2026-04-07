@@ -25,7 +25,8 @@ class IMGui(tk.Tk):
         self.im_client = ensure_client_import()
 
         # Server label
-        self.server_var = tk.StringVar(value=os.environ.get("IM_SERVER", self.im_client.SERVER))
+        init_server = self.im_client.normalize_server_url(os.environ.get("IM_SERVER"))
+        self.server_var = tk.StringVar(value=init_server)
         server_frame = tk.Frame(self)
         server_frame.pack(fill="x", padx=5, pady=5)
         tk.Label(server_frame, text="Server:").pack(side="left")
@@ -45,6 +46,7 @@ class IMGui(tk.Tk):
         add_btn("Add Friend", self.do_add_friend)
         add_btn("Friend Requests", self.do_friend_requests)
         add_btn("Respond Request", self.do_respond_request)
+        add_btn("Cancel Req", self.do_cancel_request)
         add_btn("Sync Key", self.do_sync_key)
         add_btn("Verify Peer", self.do_verify_peer)
         add_btn("Send Msg", self.do_send_msg)
@@ -58,13 +60,18 @@ class IMGui(tk.Tk):
         self.log("Ready. Use buttons to interact with server.")
 
     def apply_server(self):
-        server = self.server_var.get().strip()
-        if not server:
+        raw = self.server_var.get().strip()
+        if not raw:
             messagebox.showerror("Error", "Server URL cannot be empty.")
             return
+        server = self.im_client.normalize_server_url(raw)
+        self.server_var.set(server)
         os.environ["IM_SERVER"] = server
         self.im_client.SERVER = server
-        self.log(f"Server set to {server}")
+        if raw != server:
+            self.log(f"Server normalized to {server} (input looked like Markdown or extra text).")
+        else:
+            self.log(f"Server set to {server}")
 
     def log(self, text: str):
         self.output.configure(state="normal")
@@ -151,6 +158,15 @@ class IMGui(tk.Tk):
             return
         try:
             self.run_action("Respond Request", self.im_client.respond_request, int(rid), action)
+        except ValueError:
+            messagebox.showerror("Error", "Request ID must be integer.")
+
+    def do_cancel_request(self):
+        rid = self.ask("Request ID to cancel")
+        if not rid:
+            return
+        try:
+            self.run_action("Cancel Request", self.im_client.cancel_friend_request, int(rid))
         except ValueError:
             messagebox.showerror("Error", "Request ID must be integer.")
 

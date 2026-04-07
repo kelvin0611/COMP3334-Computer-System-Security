@@ -96,18 +96,45 @@ Explain key separation and ciphertext-only storage.
 
 Explain AEAD + AD field binding.
 
-### 8.3 Metadata exposure and trade-offs
+### 8.3 Metadata exposure and trade-offs (R19)
 
-- login timing
-- delivery timing
-- contact graph
-- message size/timestamp leakage
+- **What the server sees**
+  - Login / logout timing and IP (from `/auth/login` / `/auth/logout`).
+  - Contact graph (who sends friend requests to whom; who sends messages to whom).
+  - Message timing and approximate size (ciphertext length, TTL, `sent_at`, `delivered_at`, ACK timing).
+  - Online / offline pattern (when `/messages/pull` is called, when queues are empty).
+
+- **Why this is acceptable under HbC**
+  - The project’s threat model explicitly allows an honest-but-curious server to observe metadata.
+  - We need some metadata (delivery status, offline queue, rate limiting) for usability and abuse controls.
+  - End-to-end encryption ensures that message *content* (plaintext and keys) is not revealed.
+
+- **Limitations / out-of-scope**
+  - Traffic analysis (who talks to whom, when, and how much) is still possible.
+  - We do not attempt to hide timing/volume via padding or delay, which would add complexity beyond the course’s scope.
 
 ### 8.4 Limitations
 
 - TLS setup status
 - local key storage limitations
 - key verification UX limitations
+
+### 8.5 Key change policy rationale (R6)
+
+- **Implemented policy**
+  - When the client detects that a contact’s identity public key has changed, it:
+    - Shows a warning with old and new fingerprints.
+    - Marks the contact as *unverified*.
+    - Blocks sending new messages to that contact until the user explicitly re-verifies the new key.
+
+- **Why block-until-reverified**
+  - A pure “warning only” approach relies on users always reading and understanding the warning, which is unrealistic.
+  - Active attacks that swap identity keys (MITM) can be mitigated if the client refuses to send until the user performs an out-of-band check.
+  - The usability cost is modest: users only need to verify when keys actually change, which is rare compared to daily messaging.
+
+- **Alternative and trade-offs**
+  - Allowing messages to continue with just a warning would improve convenience but weakens guarantees against key-substitution attacks.
+  - Given the course’s focus on security, we prioritize stronger guarantees by requiring explicit re-verification.
 
 ## 9. Testing and Evaluation
 

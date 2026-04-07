@@ -18,8 +18,9 @@ def main():
     import client as im_client  # noqa: E402
 
     if args.server:
-        os.environ["IM_SERVER"] = args.server
-        im_client.SERVER = args.server
+        normalized = im_client.normalize_server_url(args.server)
+        os.environ["IM_SERVER"] = normalized
+        im_client.SERVER = normalized
 
     def ask(prompt: str, default: str | None = None) -> str:
         suffix = f" [{default}]" if default else ""
