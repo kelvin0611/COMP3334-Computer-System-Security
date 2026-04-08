@@ -1,9 +1,0 @@
-[
-  {
-    "id": 1,
-    "sender": "Alice1122",
-    "plaintext": "Hello i am Alice",
-    "expires_at": "2026-04-08T12:30:41.302021",
-    "expires_at_ts": 1775651441
-  }
-]
