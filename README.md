@@ -1,182 +1,139 @@
-# COMP3334 Secure IM Project (Baseline)
+# COMP3334 Secure IM Project (Windows 11 Deployment Guide)
 
-This repository contains a baseline implementation that follows the COMP3334 project brief:
-- 1:1 E2EE private messaging
-- Timed self-destruct (TTL)
-- Registration + password + OTP login
-- Friend request workflow
-- Offline ciphertext queue (store-and-forward)
-- Delivery states (`sent`, `delivered`) and acknowledgements
-- Conversation list and unread counters
+This repository includes the required deliverables:
+- **All source code** for server and client: `server.py`, `run_server.py`, `client.py`, `gui_client.py`, `ui_client.py`
+- **Database import file**: `im.db` (SQLite database at project root)
+- **Step-by-step deployment and usage document**: this `README.md` (Windows 11 only)
 
-## 1) Environment setup (Windows 11 / Ubuntu / macOS)
+---
 
-1. Install Python 3.10+.
-2. Open terminal in this folder.
-3. Create virtual environment:
-   - macOS/Linux: `python3 -m venv .venv && source .venv/bin/activate`
-   - Windows (PowerShell): `py -m venv .venv; .\.venv\Scripts\Activate.ps1`
-4. Install dependencies:
-   - `pip install -r requirements.txt`
-5. (Optional fallback) Protect local private key at rest with passphrase:
-   - macOS/Linux: `export IM_STATE_PASSPHRASE="your-strong-passphrase"`
-   - Windows (PowerShell): `$env:IM_STATE_PASSPHRASE="your-strong-passphrase"`
-6. OS keychain-backed storage is preferred and used when `keyring` is available.
+## 1. Software installation on clean Windows 11
 
-## 2) Run server (TLS-first default)
+No pre-installed libraries are assumed.
 
-```bash
-python run_server.py
+1. Install **Python 3.12** (recommended) from:
+   - [https://www.python.org/downloads/windows/](https://www.python.org/downloads/windows/)
+2. During Python installation, check:
+   - `Add python.exe to PATH`
+3. Open **Command Prompt (CMD)** and verify:
+
+```cmd
+python --version
 ```
 
-`run_server.py` behavior:
-- if `cert.pem` + `key.pem` exist, starts HTTPS on `8443` by default
-- otherwise refuses to start unless `IM_ALLOW_INSECURE_HTTP=1` is set
+If version is shown, proceed.
 
-For local HTTP-only testing:
+---
 
-```bash
-IM_ALLOW_INSECURE_HTTP=1 python run_server.py
+## 2. Project setup (Windows CMD)
+
+Open Command Prompt in project root:
+
+```cmd
+cd Path\COMP3334-Computer-System-Security
 ```
 
-SQLite database `im.db` is auto-created.
+Create virtual environment:
 
-## 3) Run client commands
-
-Use another terminal:
-
-```bash
-python client.py register --username alice --password "StrongPass123"
-python client.py login --username alice --password "StrongPass123" --otp 123456
+```cmd
+python -m venv .venv
 ```
 
-Then for another user (in separate folder copy or by changing `client_state.json` between users):
+Install dependencies:
 
-```bash
-python client.py register --username bob --password "StrongPass123"
-python client.py login --username bob --password "StrongPass123" --otp 123456
+```cmd
+.venv\Scripts\pip.exe install -r requirements.txt
 ```
 
-Friend and messaging flow:
+---
 
-```bash
-python client.py add-friend --user bob
-python client.py friend-requests --limit 20 --offset 0
-python client.py accept --id 1
-python client.py sync-key --user bob
-python client.py trust-status --user bob
-python client.py verify-peer --user bob
-python client.py key-storage-status
-python client.py migrate-local-key-keychain
-python client.py encrypt-local-key
-python client.py send --to bob --text "hello" --ttl 60
-python client.py pull --limit 20 --offset 0
-python client.py conversations --limit 20 --offset 0
-python client.py logout
+## 3. Database import file requirement
+
+This project uses SQLite and includes:
+- `im.db` (importable/usable database file)
+
+If required, you can open/import it using tools such as **DB Browser for SQLite**.
+
+Optional SQL dump export (if your teacher asks for `.sql` format):
+
+```cmd
+sqlite3 im.db .dump > im_dump.sql
 ```
 
-## 3b) Simple Terminal UI (recommended for testing)
+---
 
-This wraps `client.py` in an interactive menu so you can test faster.
+## 4. Start server (Windows CMD)
 
-In a user folder (e.g., `alice/` or `bob/`) run:
+`run_server.py` is TLS-first by default. For local demo on Windows, run HTTP mode:
 
-```bash
-IM_SERVER="http://127.0.0.1:8000" python ../ui_client.py
+```cmd
+cd Path\COMP3334-Computer-System-Security
+set IM_ALLOW_INSECURE_HTTP=1
+set IM_HTTP_PORT=8000
+.venv\Scripts\python.exe run_server.py
 ```
 
-For TLS-first server:
-```bash
-IM_SERVER="https://127.0.0.1:8443" python ../ui_client.py
+Expected endpoint:
+- `http://127.0.0.1:8000`
+
+Keep this terminal running.
+
+---
+
+## 5. Start GUI clients (Alice and Bob on Windows)
+
+Use two separate CMD windows.
+
+### Alice window
+
+```cmd
+cd Path\COMP3334-Computer-System-Security\alice
+set IM_SERVER=http://127.0.0.1:8000
+python ..\gui_client.py
 ```
 
-## 3c) GUI test steps for R5 and R15 (report-ready)
+### Bob window
 
-Use two GUI windows from different folders (`alice/` and `bob/`) with the same server URL.
-
-### R5 Fingerprint / verification UI
-
-1. In Alice GUI, click `Sync Key` and enter `Bob123`.
-2. Observe output line with `Peer fingerprint: ...`.
-3. Click `Verify Peer` and enter `Bob123`.
-4. Click `Trust Status` and enter `Bob123`.
-5. Confirm JSON output includes:
-   - `fingerprint`
-   - `verified: true`
-   - `blocked_due_to_key_change: false` (unless key was changed)
-
-Suggested evidence for report:
-- Screenshot A: `Peer fingerprint` output after `Sync Key`.
-- Screenshot B: `Trust Status` output showing `verified: true`.
-
-### R15 Blocking / removing
-
-1. In Bob GUI, click `Block User`, enter `Alice123`.
-2. In Alice GUI, click `Send Msg` to `Bob123`.
-3. Confirm output shows HTTP 403 with detail `Blocked by receiver`.
-4. (Optional) In Bob GUI, click `Remove Friend` and enter `Alice123`, then verify Alice can no longer send as a friend.
-
-Suggested evidence for report:
-- Screenshot C: Bob `Block User` success output.
-- Screenshot D: Alice send failure output (`403`, `Blocked by receiver`).
-
-## 4) Security notes
-
-- E2EE key agreement: X25519 + HKDF-SHA256
-- Message protection: AES-256-GCM
-- AD binds sender/receiver/conversation/counter/TTL
-- Replay resistance: monotonic per-peer message counter check
-- Strict key verification policy: peer keys must be explicitly verified before sending
-- Delivery ACK is returned as E2EE encrypted ACK message (`ack-e2ee`) from recipient client
-- Password storage: PBKDF2-SHA256 via Passlib
-- OTP: TOTP (RFC 6238 style) via PyOTP
-- Server stores ciphertext only, not plaintext keys
-
-## 5) Important limitations in this baseline
-
-- JWT secret is hardcoded placeholder; replace for production.
-- TLS-first startup is implemented, but cert management/proxy hardening is still your deployment task.
-- Local key storage supports OS keychain (preferred) and passphrase-encrypted fallback.
-- CLI only (acceptable by brief), not GUI.
-
-## 6) Suggested deliverable structure for submission
-
-Create:
-
-```text
-TeamID/
-  code/   (this project)
-  report.pdf
-  video.mp4
+```cmd
+cd Path\COMP3334-Computer-System-Security\bob
+set IM_SERVER=http://127.0.0.1:8000
+python ..\gui_client.py
 ```
 
-Zip as `TeamID.zip`.
+---
 
-## 7) Report drafting support
+## 6. Step-by-step usage flow
 
-Use `REPORT_TEMPLATE.md` as your report skeleton. It already includes the required sections and two security test case templates.
-Use `FINAL_SUBMISSION_CHECKLIST.md` before packaging `TeamID.zip`.
+1. In Alice GUI: click `Register`.
+2. In Bob GUI: click `Register`.
+3. In Alice GUI: click `Login` (password + 6-digit OTP).
+4. In Bob GUI: click `Login` (password + 6-digit OTP).
+5. Alice: click `Add Friend`, input Bob username.
+6. Bob: click `Friend Requests`, then `Respond Request` with `accept`.
+7. Alice: `Sync Key` -> `Verify Peer`.
+8. Bob: `Sync Key` -> `Verify Peer`.
+9. Alice: `Send Msg` to Bob.
+10. Bob: `Pull Msgs` and verify decrypted message.
+11. Optional security test: Bob `Block User` Alice, then Alice send again and verify blocked error.
 
-## 8) TLS deployment guide (required for final submission)
+---
 
-Use one of these approaches:
+## 7. Readability and documentation statement
 
-1. **Direct Uvicorn TLS (simple demo)**
-   - Generate cert and key (development only):
-     - `openssl req -x509 -newkey rsa:4096 -nodes -keyout key.pem -out cert.pem -days 365`
-   - Run server with TLS:
-     - `uvicorn server:app --host 0.0.0.0 --port 8443 --ssl-keyfile key.pem --ssl-certfile cert.pem`
-   - Set client endpoint:
-     - `export IM_SERVER=https://<host>:8443`
+The code is organized into readable modules with clear responsibilities:
+- `server.py`: API endpoints, storage, and server-side workflow
+- `client.py`: client commands, encryption/session logic, friend/message flow
+- `gui_client.py`: GUI actions and input/output error handling
 
-2. **Reverse proxy TLS (recommended)**
-   - Put Nginx/Caddy in front of Uvicorn.
-   - Terminate TLS at proxy with managed certificates (e.g., Let's Encrypt).
-   - Forward to internal `http://127.0.0.1:8000`.
-   - Enforce HTTPS redirect and modern TLS settings.
+The implementation uses descriptive naming and comments for non-trivial logic, especially security-related flow (authentication, key exchange, encryption, verification, and message handling).
 
-For your report, include:
-- certificate strategy (self-signed/dev vs CA-issued/prod),
-- where TLS is terminated,
-- and how clients verify server certificates.
+---
+
+## 8. Troubleshooting (Windows)
+
+- If you see missing module errors, use `.venv` Python:
+  - `.venv\Scripts\python.exe ...`
+- If server raises TLS cert error, ensure:
+  - `set IM_ALLOW_INSECURE_HTTP=1`
+- If `python` is not recognized, reopen CMD after installing Python or reinstall with PATH option enabled.
 
