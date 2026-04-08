@@ -1,0 +1,14 @@
+{
+  "username": "Alice123",
+  "token": "",
+  "otp_secret": "2XSIO5UBTIRVJSJEURYUUN33VVNDY2QO",
+  "identity_privkey": "",
+  "peer_keys": {},
+  "counters": {},
+  "peer_verified": {},
+  "trusted_fingerprints": {},
+  "key_change_blocked": {},
+  "identity_privkey_enc": "",
+  "state_crypto": {},
+  "key_storage": "keyring"
+}
